@@ -1,0 +1,288 @@
+@baseUrl = http://localhost:3000
+
+# Preencha com o e-mail e a senha do admin criado por `npm run seed:admin` (os mesmos do seu .env).
+@adminEmail =
+@adminSenha =
+@runId = {{$guid}}
+@nomeCategoria = QA-Processadores-{{runId}}
+@nomeProduto = QA-Processador-Ryzen7-{{runId}}
+
+# Fluxo de integração manual para a extensão REST Client do VS Code.
+# Use um banco local/de teste: os cadastros e pedidos ficam salvos.
+# O cadastro de usuários é necessário apenas na primeira execução.
+
+### 1. Login do administrador
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "senha": "{{adminSenha}}"
+}
+
+### Token do administrador
+@tokenAdmin = {{loginAdmin.response.body.$.token}}
+
+### 2. Criar categoria de teste
+# @name criarCategoria
+POST {{baseUrl}}/categorias
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "{{nomeCategoria}}",
+  "descricao": "Categoria criada pelo fluxo de testes"
+}
+
+### ID da categoria criada
+@idCategoria = {{criarCategoria.response.body.$.categoria.codCategoria}}
+
+### 3. Consultar a categoria criada
+GET {{baseUrl}}/categorias/{{idCategoria}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 4. Buscar categorias pelo nome
+GET {{baseUrl}}/categorias/buscar?nome={{nomeCategoria}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 5. Criar produto; o backend cria o estoque automaticamente
+# @name criarProduto
+POST {{baseUrl}}/produtos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "{{nomeProduto}}",
+  "descricao": "Produto de teste para checkout",
+  "marca": "AMD",
+  "preco": 1250.90,
+  "idCategoria": {{idCategoria}},
+  "quantidadeInicial": 20
+}
+
+### ID do produto criado
+@idProduto = {{criarProduto.response.body.$.produto.codProduto}}
+
+### 6. Consultar produto e estoque vinculado
+# @name consultarProduto
+GET {{baseUrl}}/produtos/{{idProduto}}
+Authorization: Bearer {{tokenAdmin}}
+
+### ID do estoque vinculado ao produto (não usa o primeiro registro global)
+@idEstoque = {{consultarProduto.response.body.$.estoque.codEstoque}}
+
+### 7. Buscar produtos pelo nome
+GET {{baseUrl}}/produtos/buscar?nome={{nomeProduto}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 8. Atualizar quantidade do estoque
+PUT {{baseUrl}}/estoque/{{idEstoque}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "quantidade": 18,
+  "quantidadeMinima": 3
+}
+
+### 9. Consultar estoque atualizado
+GET {{baseUrl}}/estoque/{{idEstoque}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 10. Criar usuário cliente (execute uma vez)
+POST {{baseUrl}}/usuarios
+Content-Type: application/json
+
+{
+  "nome": "Cliente QA",
+  "email": "joao@email.com",
+  "senha": "cliente123Senha@",
+  "cpf": "22255588846",
+  "cep": "01001000",
+  "numero": "123",
+  "tipo": "CLIENTE"
+}
+
+### 11. Login do cliente
+# @name loginCliente
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "senha": "cliente123Senha@"
+}
+
+### Token do cliente
+@tokenCliente = {{loginCliente.response.body.$.token}}
+@idCliente = {{loginCliente.response.body.$.usuario.codUsuario}}
+
+### 12. Consultar perfil do cliente autenticado
+GET {{baseUrl}}/usuarios/perfil
+Authorization: Bearer {{tokenCliente}}
+
+### 13. Criar pedido (reduz o estoque e cria entrega)
+# @name criarPedido
+POST {{baseUrl}}/pedidos
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "itens": [
+    {
+      "idProduto": {{idProduto}},
+      "quantidade": 2
+    }
+  ]
+}
+
+### ID do pedido criado
+@idPedido = {{criarPedido.response.body.$.codPedido}}
+
+### 14. Consultar pedidos do cliente
+GET {{baseUrl}}/pedidos/meus-pedidos
+Authorization: Bearer {{tokenCliente}}
+
+### 15. Consultar pedido e entrega associada
+# @name consultarPedido
+GET {{baseUrl}}/pedidos/{{idPedido}}
+Authorization: Bearer {{tokenCliente}}
+
+### ID da entrega associada ao pedido (não usa a primeira entrega global)
+@idEntrega = {{consultarPedido.response.body.$.entrega.codEntrega}}
+
+### 16. Atualizar status do pedido como administrador
+PATCH {{baseUrl}}/pedidos/{{idPedido}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "status": "PENDENTE"
+}
+
+### 17. Confirmar pagamento do pedido
+PATCH {{baseUrl}}/pedidos/{{idPedido}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "status": "PAGO"
+}
+
+### 18. Consultar entrega do pedido
+GET {{baseUrl}}/entregas/{{idEntrega}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 19. Atualizar rastreio da entrega
+PATCH {{baseUrl}}/entregas/{{idEntrega}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "status": "EM_TRANSITO",
+  "codigoRastreio": "BR123456789BR"
+}
+
+### 20. Conferir estoque após vender 2 unidades (esperado: 16)
+GET {{baseUrl}}/estoque/{{idEstoque}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 21. Relatório de vendas por categoria
+GET {{baseUrl}}/relatorios/vendas
+Authorization: Bearer {{tokenAdmin}}
+
+### 22. Relatório de faturamento mensal
+GET {{baseUrl}}/relatorios/estoque
+Authorization: Bearer {{tokenAdmin}}
+
+
+### 23. Listar todos os usuários (admin)
+GET {{baseUrl}}/usuarios
+Authorization: Bearer {{tokenAdmin}}
+
+### 24. Buscar usuários pelo nome (admin)
+GET {{baseUrl}}/usuarios/buscar?nome=Cliente
+Authorization: Bearer {{tokenAdmin}}
+
+### 25. Consultar usuário por código (admin ou o próprio usuário)
+GET {{baseUrl}}/usuarios/1
+Authorization: Bearer {{tokenAdmin}}
+
+### 26. Atualizar perfil do cliente (PUT)
+PUT {{baseUrl}}/usuarios/{{idCliente}}
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "nome": "Cliente QA Atualizado",
+  "email": "joao@email.com",
+  "cep": "01001000",
+  "numero": "321"
+}
+
+### 27. Atualizar parcialmente o perfil do cliente (PATCH)
+PATCH {{baseUrl}}/usuarios/{{idCliente}}
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "numero": "999"
+}
+
+### 28. Cliente tentando virar ADMIN (esperado: campo ignorado, continua CLIENTE)
+PATCH {{baseUrl}}/usuarios/{{idCliente}}
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "tipo": "ADMIN"
+}
+
+### 29. Cliente tentando editar outro usuário (esperado: 403)
+PUT {{baseUrl}}/usuarios/1
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "nome": "Invasor"
+}
+
+### 30. Rota privada sem token (esperado: 401)
+GET {{baseUrl}}/usuarios/perfil
+
+### 31. Listar todos os pedidos (admin)
+GET {{baseUrl}}/pedidos
+Authorization: Bearer {{tokenAdmin}}
+
+### 32. Buscar pedidos pelo nome do cliente (admin)
+GET {{baseUrl}}/pedidos/buscar?nome=Cliente
+Authorization: Bearer {{tokenAdmin}}
+
+### 33. Listar entregas (admin)
+GET {{baseUrl}}/entregas
+Authorization: Bearer {{tokenAdmin}}
+
+### 34. Buscar entregas pelo nome do cliente (admin)
+GET {{baseUrl}}/entregas/buscar?nome=Cliente
+Authorization: Bearer {{tokenAdmin}}
+
+### 35. Buscar estoque pelo nome do produto (admin)
+GET {{baseUrl}}/estoque/buscar?nome=QA-Processador
+Authorization: Bearer {{tokenAdmin}}
+
+### 36. Atualizar produto parcialmente (PATCH, admin)
+PATCH {{baseUrl}}/produtos/{{idProduto}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "preco": 1999.90
+}
+
+### 37. Remover pedido (admin)
+DELETE {{baseUrl}}/pedidos/{{idPedido}}
+Authorization: Bearer {{tokenAdmin}}
+
+### 38. Faixas de desconto das compras (público)
+GET {{baseUrl}}/descontos

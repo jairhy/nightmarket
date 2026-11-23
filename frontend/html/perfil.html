@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil // Night Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/perfil.css">
+    <script src="../js/imagens-produtos.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/cart.js" defer></script>
+    <script src="../js/perfil.js" defer></script>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="../index.html" class="brand glitch" data-text="NIGHT/MARKET">NIGHT<span class="brand-slash">/</span>MARKET</a>
+            <nav class="main-nav">
+                <a href="../index.html">Home</a>
+                <a href="./produtos.html">Produtos</a>
+                <a href="./carrinho.html">Carrinho <span class="cart-count" data-cart-count>0</span></a>
+                <a href="./login.html" class="nav-guest-only">Login</a>
+                <a href="./perfil.html" class="active nav-user-only">Perfil</a>
+                <a href="./pedidos.html" class="nav-user-only">Meus Pedidos</a>
+                <a href="./admin.html#vendas" class="nav-admin-only">Movimentação de Vendas</a>
+                <a href="./admin.html#produtos" class="nav-admin-only">Cadastro de Produtos</a>
+                <button class="link-like nav-user-only" data-logout>Sair</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container block" style="padding-top:40px;">
+        <div id="alerta-area"></div>
+
+        <div class="perfil-layout">
+            <aside class="perfil-side">
+                <div class="avatar-wrap">
+                    <div class="avatar" id="avatar"></div>
+                    <button type="button" class="avatar-edit" id="btn-foto">Trocar foto</button>
+                    <input type="file" id="input-foto" accept="image/*" class="hidden">
+                </div>
+                <h2 id="p-nome">...</h2>
+                <p class="email" id="p-email"></p>
+                <span class="badge-status badge-PAGO" id="p-tipo"></span>
+                <button type="button" class="btn btn-outline btn-block btn-sm" id="btn-editar">Editar perfil</button>
+
+                <div class="info-lista" id="p-info"></div>
+
+                <div class="stats-mini">
+                    <div class="stat-box"><span class="n" id="s-pedidos">0</span><span class="l">Pedidos</span></div>
+                    <div class="stat-box"><span class="n" id="s-itens">0</span><span class="l">Itens</span></div>
+                    <div class="stat-box"><span class="n" id="s-unicos">0</span><span class="l">Produtos</span></div>
+                    <div class="stat-box stat-gasto"><span class="n" id="s-gasto">R$ 0,00</span><span class="l">Total investido</span></div>
+                </div>
+            </aside>
+
+            <section>
+                <div class="tabs perfil-tabs" id="tabs">
+                    <button class="tab-btn ativo" data-tab="geral">Visão geral</button>
+                    <button class="tab-btn" data-tab="itens">Itens comprados <span class="cnt" id="c-itens">0</span></button>
+                    <button class="tab-btn" data-tab="pedidos">Pedidos <span class="cnt" id="c-pedidos">0</span></button>
+                    <button class="tab-btn" data-tab="config">Configurações</button>
+                </div>
+
+                <div class="tab-painel ativo" id="tab-geral">
+                    <div class="sec-titulo"><h3>Compras recentes</h3><button type="button" data-goto="itens">Ver todos →</button></div>
+                    <div class="pin-grid" id="g-recentes"></div>
+
+                    <div class="sec-titulo"><h3 id="g-heat-titulo">Atividade de compras</h3></div>
+                    <div class="heat-box">
+                        <div class="heat-meses" id="heat-meses"></div>
+                        <div class="heat" id="heat"></div>
+                        <div class="heat-leg">Menos <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> Mais</div>
+                    </div>
+
+                    <div class="sec-titulo"><h3>Atividade</h3></div>
+                    <div class="timeline" id="g-timeline"></div>
+                </div>
+
+                <div class="tab-painel" id="tab-itens">
+                    <div class="perfil-filtro"><input type="text" id="filtro-itens" placeholder="Filtrar itens comprados..."></div>
+                    <div class="grid-produtos" id="lista-itens"></div>
+                </div>
+
+                <div class="tab-painel" id="tab-pedidos"><div id="lista-pedidos"></div></div>
+
+                <div class="tab-painel" id="tab-config">
+                    <div class="painel cfg-wrap">
+                        <div class="cfg-foto">
+                            <button type="button" class="btn btn-outline btn-sm" id="btn-foto2">Enviar foto</button>
+                            <button type="button" class="btn btn-danger btn-sm" id="btn-remover-foto">Remover foto</button>
+                        </div>
+                        <form id="form-perfil" autocomplete="off">
+                            <div class="linha-2">
+                                <div class="campo"><label for="nome">Nome completo</label><input type="text" id="nome" required></div>
+                                <div class="campo"><label for="email">E-mail</label><input type="email" id="email" name="perfil-email" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"></div>
+                            </div>
+                            <div class="linha-2">
+                                <div class="campo"><label for="cpf">CPF</label><input type="text" id="cpf" disabled></div>
+                                <div class="campo"><label for="tipo">Tipo de conta</label><input type="text" id="tipo" disabled></div>
+                            </div>
+                            <div class="linha-3">
+                                <div class="campo"><label for="cep">CEP</label><input type="text" id="cep" maxlength="9"></div>
+                                <div class="campo"><label for="numero">Número</label><input type="text" id="numero"></div>
+                                <div class="campo"><label for="cidade">Cidade / UF</label><input type="text" id="cidade" disabled></div>
+                            </div>
+                            <div class="linha-2">
+                                <div class="campo"><label for="rua">Rua</label><input type="text" id="rua" disabled></div>
+                                <div class="campo"><label for="bairro">Bairro</label><input type="text" id="bairro" disabled></div>
+                            </div>
+                            <div class="campo">
+                                <label for="senha">Nova senha (deixe em branco para manter a atual)</label>
+                                <input type="password" id="senha" name="perfil-nova-senha" placeholder="••••••••" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btn-salvar">Salvar Alterações</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="rodape">
+        <div class="container">NIGHT MARKET // PEÇAS DE PC — <span>SISTEMA DE E-COMMERCE v1.0</span></div>
+    </footer>
+
+</body>
+</html>
