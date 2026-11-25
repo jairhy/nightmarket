@@ -4,8 +4,15 @@ Loja de peças de computador com tema cyberpunk. Frontend em HTML/CSS/JS puro e 
 
 ## Acesso de administrador
 
-Não há credenciais de administrador padrão. Configure `ADMIN_*` no arquivo `.env`
-e rode `npm run seed:admin` dentro de `backend/` (detalhes na seção 4).
+Credenciais locais atuais do administrador:
+
+```
+E-mail: admin@gmail.com
+Senha: admin123
+```
+
+Configure `ADMIN_*` no arquivo `.env` e rode `npm run seed:admin` dentro de `backend/`
+para recriar ou atualizar o administrador (detalhes na seção 4).
 
 ## Sumário
 
@@ -99,15 +106,12 @@ A URL da API fica em `frontend/js/config.js` (`API_URL`, padrão `http://localho
 
 ## 4. Acesso de administrador
 
-O sistema não vem com nenhuma conta de admin pronta: você define a sua. Preencha no `backend/.env`:
+O sistema pode usar uma conta de admin configurada no `backend/.env`. Para o ambiente local atual:
 
 ```
-ADMIN_NOME=
-ADMIN_EMAIL=
-ADMIN_SENHA=        (mínimo 8 caracteres)
-ADMIN_CPF=          (CPF válido)
-ADMIN_CEP=
-ADMIN_NUMERO=
+ADMIN_NOME=Administrador
+ADMIN_EMAIL=admin@gmail.com
+ADMIN_SENHA=admin123
 ```
 
 Depois rode `npm run seed:admin`. O script cria o admin com a foto `backend/assets/admin.jpg` e busca o endereço pelo CEP.

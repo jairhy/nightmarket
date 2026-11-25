@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resp.ok) {
                 Auth.salvarSessao(dados.token, dados.usuario)
                 alertaArea.innerHTML = `<div class="alerta sucesso">ACESSO CONCEDIDO :: bem-vindo(a), ${dados.usuario.nome}</div>`
-                setTimeout(() => window.location.href = './perfil.html', 700)
+                const destino = dados.usuario.tipo === 'ADMIN' ? './admin.html' : './perfil.html'
+                setTimeout(() => window.location.href = destino, 700)
             } else {
                 alertaArea.innerHTML = `<div class="alerta erro">${dados.message || 'Credenciais inválidas'}</div>`
                 btn.disabled = false

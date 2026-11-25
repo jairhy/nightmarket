@@ -4,7 +4,7 @@ require('dotenv').config()
 const db = new Sequelize(
     process.env.DB_NAME || process.env.MYSQLDATABASE || 'dc_pecas',
     process.env.DB_USER || process.env.MYSQLUSER || 'root',
-    process.env.DB_PASS || process.env.MYSQLPASSWORD || '',
+    process.env.DB_PASS || process.env.MYSQLPASSWORD || 'senai',
     {
         dialect: 'mysql',
         host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
